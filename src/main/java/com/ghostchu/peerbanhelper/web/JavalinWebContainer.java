@@ -26,6 +26,7 @@ import io.javalin.json.JsonMapper;
 import io.javalin.openapi.plugin.OpenApiPlugin;
 import io.javalin.openapi.plugin.swagger.SwaggerPlugin;
 import io.javalin.plugin.bundled.CorsPluginConfig;
+import org.eclipse.jetty.unixdomain.server.UnixDomainServerConnector;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
@@ -35,6 +36,7 @@ import org.springframework.stereotype.Component;
 
 import java.io.File;
 import java.lang.reflect.Type;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -67,6 +69,25 @@ public final class JavalinWebContainer {
             }
         };
         this.javalin = Javalin.create(c -> {
+                    String unixsocket = Main.getMainConfig().getString("server.unixsocket");
+                    if (unixsocket != null && !unixsocket.isBlank()){/*
+                        c.jetty.modifyServer(server -> {
+                            Path socketPath = Path.of(unixsocket);
+                            UnixDomainServerConnector connector = new UnixDomainServerConnector(server);
+                            connector.setUnixDomainPath(socketPath);
+                            connector.setIdleTimeout(30000);
+                            connector.setAcceptQueueSize(256);
+                            server.addConnector(connector);
+                        });*/
+                        c.jetty.addConnector((server, httpConfiguration) -> {
+                            Path socketPath = Path.of(unixsocket);
+                            UnixDomainServerConnector connector = new UnixDomainServerConnector(server);
+                            connector.setUnixDomainPath(socketPath);
+                            connector.setIdleTimeout(30000);
+                            connector.setAcceptQueueSize(256);
+                            return connector;
+                        });
+                    }
                     c.http.gzipOnlyCompression();
                     c.showJavalinBanner = false;
                     c.jsonMapper(gsonMapper);

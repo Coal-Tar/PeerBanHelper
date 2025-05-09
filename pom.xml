@@ -511,6 +511,11 @@
         </dependency>
 
         <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-unixdomain-server</artifactId>
+            <version>11.0.24</version>
+        </dependency>
+        <dependency>
             <groupId>io.javalin</groupId>
             <artifactId>javalin</artifactId>
             <version>${javalin.version}</version>
